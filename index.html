@@ -13,6 +13,7 @@
     <script src="index.js" defer></script>
 <body>
     <h1>sudoku board</h1>
+    <div class="container">
     <table>
         <tr>
             <td><input class="cell" id="cell-1" type="text" value="1"></td>
@@ -40,7 +41,7 @@
             <td><input id="cell-17" type="text"></td>
             <td><input id="cell-18" type="text"></td>  
         </tr>   
-        <tr>
+        <tr class="line">
             <td><input id="cell-19" type="text"></td>
             <td><input id="cell-20" type="text"></td>
             <td><input id="cell-21" type="text"></td> 
@@ -80,7 +81,7 @@
             <td><input id="cell-44" type="text"></td>
             <td><input id="cell-45" type="text"></td>  
         </tr>   
-        <tr>
+        <tr class="line">
             <td><input id="cell-46" type="text"></td>
             <td><input id="cell-47" type="text"></td>
             <td><input id="cell-48" type="text"></td> 
@@ -135,9 +136,13 @@
         </tr>
 
     </table>
-    <button class="btn" id="btn-solve" onclick="">solve</button>
-    <button class="btn" id="btn-clean"onclick="">clean board</button>
-    <button class="btn" id="btn-reloade"onclick="">reloade board</button>
-    <button class="btn" id="btn-clean-changes"onclick="">clean changes</button>
+    
+    <div class="buttons">
+    <button class="btn" id="btn-solve" onclick="">Solve</button>
+    <button class="btn" id="btn-reloade" onclick="">New Game</button>
+    <button class="btn" id="btn-clean" onclick="">clean board</button>
+    <button class="btn" id="btn-clean-changes" onclick="">clean changes</button>
+    </div>
+</div>
 </body>
 </html>
