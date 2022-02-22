@@ -224,7 +224,7 @@ class Solver{
         return [x ,y];
     }
 
-    
+    // TODO: can optimize it
     isCorrected(arr = this.logic_board){
         for (let index = 0; index < 81; index++) {
             let number = arr[index];
@@ -234,25 +234,7 @@ class Solver{
         }
         return true;
     }
-    /*
-    isCorrected(){
-        let row = [];
-        let col = [];
-        for (let i = 0; i < 9; i++) {
-            for (let j = 0; j < 9; j++) {
-                let number = this.logic_board[this.#cordinatsToIndex(i,j)];
-                if( number != 0){
-                    console.log(row[i]);
-                    if(row[i] == true || col[j] == true) return false;
-                    row[i].push(number);
-                    col[j].push(number);
-                }
-            }
-        }
-        
-        return true;
-    }
-    */
+    
 
     isSolvable(arr){
         if(!this.isCorrected(arr)) return "is not corrected";
@@ -318,6 +300,14 @@ class Solver{
         console.log(this.logic_board)
         // console.log(this.original_board)
     }
+
+    cleanChanges(){
+        console.log("original:", this.original_board);
+        console.log("logical:", this.logic_board);
+
+        this.logic_board = this.original_board;
+        this.screen_board.reloadScreen(this.logic_board);
+    }
 }
 
 
@@ -357,7 +347,7 @@ clean_board_button.addEventListener('click',e=>{
 reloade_board_button = document.getElementById("btn-reloade");
 reloade_board_button.addEventListener('click', e=>{
     solver.clean()
-    solver.initRandomBoard(50);
+    solver.initRandomBoard(40);
 });
 
 //SOLVE button
@@ -365,6 +355,13 @@ solve_board_button = document.getElementById("btn-solve");
 solve_board_button.addEventListener('click',e=>{
     console.log("the board solved ",solver.solveAndUpdateScreen());
 });
+
+//CLEAN CHANGES
+clean_changes_board_button = document.getElementById("btn-clean-changes");
+clean_changes_board_button.addEventListener('click',e=>{    
+    solver.cleanChanges();
+    console.log("clean changes");
+})
 
 
 });
