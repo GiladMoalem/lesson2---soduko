@@ -256,9 +256,9 @@ class Solver{
             this.logic_board = [...temp_matrix];
             return false;
         }
-        // this.logic_board = [...temp_matrix];
+        
+        //update the view.
         this.screen_board.reloadScreen(this.logic_board);
-        //to upload the view.
         return true;
     }
     
@@ -305,7 +305,7 @@ class Solver{
         console.log("original:", this.original_board);
         console.log("logical:", this.logic_board);
 
-        this.logic_board = this.original_board;
+        this.logic_board = [...this.original_board];
         this.screen_board.reloadScreen(this.logic_board);
     }
 }
@@ -337,6 +337,7 @@ solver.initRandomBoard(25);//alot prints here
 window.addEventListener('load',()=>{
 
 //_____________________BUTTONS____________________//
+
 //CLEAN button
 clean_board_button = document.getElementById("btn-clean");
 clean_board_button.addEventListener('click',e=>{
