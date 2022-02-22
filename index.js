@@ -48,6 +48,9 @@ class ScreenBoard{
         
         this.#readOnly();
     }
+    cleanChanges(){
+        this.changed_index = []; 
+    }
 };
 
 
@@ -74,13 +77,13 @@ class Solver{
 
     // this function check if the number can be
     // in the logic_board matrix in spesific index. 
-    isLeagle(index, num){
+    isLeagle(index, num, arr = this.logic_board){
         let [i,j] = this.#indexToCordinats(index);
 
         if(num > 9 || num <1)  return false;
         for (let k = 0; k < 9; k++) {
-            if(k != i && this.logic_board[this.#cordinatsToIndex(k,j)] == num) return false;
-            if(k != j && this.logic_board[this.#cordinatsToIndex(i,k)] == num) return false;
+            if(k != i && arr[this.#cordinatsToIndex(k,j)] == num) return false;
+            if(k != j && arr[this.#cordinatsToIndex(i,k)] == num) return false;
             // console.log("i j =", i, j, "index =", index, "true")
         }
         let i2 = (Math.floor(i/3))*3;
@@ -88,13 +91,13 @@ class Solver{
 
         for (let k = 0; k < 3; k++) {
             for (let l = 0; l < 3; l++) {
-                if( (i2+k != i || j2+l != j) && this.logic_board[this.#cordinatsToIndex(i2+k, j2+l)] == num) return false;
+                if( (i2+k != i || j2+l != j) && arr[this.#cordinatsToIndex(i2+k, j2+l)] == num) return false;
             }
         }
         return true;
     }
 
-    initRandomBoard(count = 10){
+    initRandomBoard2(count = 10){
         // BEFORE USING THIS FUNCTION MAKE SURE THE ARRAY IS EMPTY!!
         // count have to be smaller then 82.
         this.clean();
@@ -133,6 +136,69 @@ class Solver{
 
         this.screen_board.reloadScreen(this.logic_board);
     }
+//------------------------------------------------------//
+
+    initRandomArray(seed = 15){
+        let arr = [];
+        this.creatEmptyMatrix(arr);
+
+        while(seed > 0){
+            let index;
+
+            do{
+                index = Math.floor (Math.random() * (9*9-1));
+            } while(arr[index] != 0);
+        
+            let number = Math.floor (Math.random()*9);
+            
+            let trys_counter = 0;
+            let is_success = true;
+            while ( ! this.isLeagle (index, number, arr)) {
+                trys_counter++;
+                number = Math.floor (Math.random()*9)+1;
+                // console.log("trys counter:",trys_counter, "number:", number);
+
+                if(trys_counter > 5){
+                    is_success = false;
+                    break;
+                }
+            }
+            if(!is_success) continue;
+            arr[index] = number;
+            seed--;
+        }
+        return arr;
+    }
+
+    initRandomBoard(count = 25, seed = 15){
+        let arr = this.initRandomArray(seed);
+        
+        let arr_solved = this.isSolvable(arr);
+        while(!arr_solved){
+            arr = this.initRandomArray(seed);
+            arr_solved = this.isSolvable(arr);
+        }
+
+        let prtision_arr = [];
+        this.creatEmptyMatrix(prtision_arr);
+        while(count > 0){
+            let index;
+            do{ 
+                index = Math.floor (Math.random() * (9*9-1));
+            }while(prtision_arr[index] != 0);
+                
+            prtision_arr[index] = arr_solved[index];
+            count--;
+        }
+
+        this.logic_board = prtision_arr;
+
+        this.updateOriginalBoard();
+        this.screen_board.reloadScreen(this.logic_board);
+       
+        console.log("is corrected:", this.isCorrected(arr_solved), arr_solved);
+        
+    }
 
     updateOriginalBoard(){
         for (let index = 0; index < 81; index++) {
@@ -159,10 +225,10 @@ class Solver{
     }
 
     
-    isCorrected(){
+    isCorrected(arr = this.logic_board){
         for (let index = 0; index < 81; index++) {
-            let number = this.logic_board[index];
-            if( number != 0 && ! this.isLeagle(index, number)){
+            let number = arr[index];
+            if( number != 0 && ! this.isLeagle(index, number, arr)){
                 return false;
             }
         }
@@ -188,8 +254,17 @@ class Solver{
     }
     */
 
-    
-    solve(){
+    isSolvable(arr){
+        if(!this.isCorrected(arr)) return "is not corrected";
+        let temp_matrix = [...arr];
+        
+        if(!this.solverRecursive(0, temp_matrix)){
+            return false;
+        }
+        return temp_matrix;
+    }
+
+    solveAndUpdateScreen(){
         this.updateLogicMetrixFromScreen();
         if(!this.isCorrected()) return "is not corrected";
         
@@ -217,7 +292,7 @@ class Solver{
         }
         
         for (let k = 1; k < 10; k++) {
-            if(this.isLeagle(index,k)){
+            if(this.isLeagle(index,k,arr)){
                 // console.log("solve recurs legal - index:",index," value:",k);
                 arr[index] = k;
                 if(this.solverRecursive(index+1, arr))
@@ -238,8 +313,10 @@ class Solver{
         this.screen_board.changed_index.forEach ((element, index) => {
             this.logic_board[index] = element;
         });
+        this.screen_board.cleanChanges();
+
         console.log(this.logic_board)
-        console.log(this.original_board)
+        // console.log(this.original_board)
     }
 }
 
@@ -258,16 +335,11 @@ class Solver{
 
 let solver = new Solver();
 solver.initRandomBoard(25);//alot prints here
-// solver.clean()
-console.log("is corrected:", solver.isCorrected());
-console.log("is solved:", solver.solve());
-console.log("is corrected solution", solver.isCorrected())
-// solver.logic_board[0] = 1;
-
-// console.log(solver.isLeagle(1, 1));
 
 
-
+// console.log("is corrected:", solver.isCorrected());
+// console.log("is solved:", solver.solveAndUpdateScreen());
+// console.log("is corrected solution", solver.isCorrected())
 
 
 
@@ -285,13 +357,13 @@ clean_board_button.addEventListener('click',e=>{
 reloade_board_button = document.getElementById("btn-reloade");
 reloade_board_button.addEventListener('click', e=>{
     solver.clean()
-    solver.initRandomBoard(25);
+    solver.initRandomBoard(50);
 });
 
 //SOLVE button
 solve_board_button = document.getElementById("btn-solve");
 solve_board_button.addEventListener('click',e=>{
-    console.log("the board solved ",solver.solve());
+    console.log("the board solved ",solver.solveAndUpdateScreen());
 });
 
 
