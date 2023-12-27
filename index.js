@@ -58,6 +58,7 @@ class ScreenBoard{
 
 //-----------------------------SOLVER CLASS--------------------------------------//
 class Solver{
+    #start_time = Date.now();
 
     constructor(){
         this.logic_board = []; // the board with the user changes. should check if the board correct.
@@ -308,6 +309,9 @@ class Solver{
         this.logic_board = [...this.original_board];
         this.screen_board.reloadScreen(this.logic_board);
     }
+
+    getStartTime(){return this.#start_time;}
+
 }
 
 
@@ -319,18 +323,8 @@ class Solver{
 
 
 
-
-// screen = new ScreenBoard();
-// screen.writeTo(8, "45");
-
-let solver = new Solver();
+const solver = new Solver();
 solver.initRandomBoard(25);//alot prints here
-
-
-// console.log("is corrected:", solver.isCorrected());
-// console.log("is solved:", solver.solveAndUpdateScreen());
-// console.log("is corrected solution", solver.isCorrected())
-
 
 
 
@@ -339,26 +333,26 @@ window.addEventListener('load',()=>{
 //_____________________BUTTONS____________________//
 
 //CLEAN button
-clean_board_button = document.getElementById("btn-clean");
+const clean_board_button = document.getElementById("btn-clean");
 clean_board_button.addEventListener('click',e=>{
     solver.clean();
 });
 
 //RELOAD button
-reloade_board_button = document.getElementById("btn-reloade");
+const reloade_board_button = document.getElementById("btn-reloade");
 reloade_board_button.addEventListener('click', e=>{
     solver.clean()
     solver.initRandomBoard(40);
 });
 
 //SOLVE button
-solve_board_button = document.getElementById("btn-solve");
+const solve_board_button = document.getElementById("btn-solve");
 solve_board_button.addEventListener('click',e=>{
     console.log("the board solved ",solver.solveAndUpdateScreen());
 });
 
 //CLEAN CHANGES
-clean_changes_board_button = document.getElementById("btn-clean-changes");
+const clean_changes_board_button = document.getElementById("btn-clean-changes");
 clean_changes_board_button.addEventListener('click',e=>{    
     solver.cleanChanges();
     console.log("clean changes");
@@ -368,5 +362,37 @@ clean_changes_board_button.addEventListener('click',e=>{
 });
 
 
+
+
+const time = document.getElementById("time");
+time.innerText = "ds";
+start = Date.now();
+time.innerText = start;
+
+var t=setInterval(runFunction,1000);
+function runFunction(){
+    now = Date.now();
+    start = solver.getStartTime();
+
+    seconds_passed = Math.floor((now - start) / 1000) % 60;
+    minutes_passed = Math.floor((now - start) / (1000 * 60)) % 60;
+    hours_passed = Math.floor((now - start) / (1000 * 60 * 60)) % 24;
     
+    if(seconds_passed < 10) seconds_passed = '0'+ seconds_passed;
+    if(minutes_passed < 10) minutes_passed = '0'+ minutes_passed;
+    if(hours_passed < 10) hours_passed = '0' + hours_passed;
+    console.log(seconds_passed)
+
+    if(hours_passed != 0){
+        time.innerText = `TIME:  ${hours_passed}:${minutes_passed}:${seconds_passed}`;
+    }
+    else{
+        time.innerText = `TIME:  ${minutes_passed}:${seconds_passed}`;
+    }    
+    
+}
+    // clearInterval(t);
+
+
+
 
