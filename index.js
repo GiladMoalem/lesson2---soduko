@@ -2,6 +2,8 @@ class ScreenBoard{
     
     #screen_board = [];
     changed_index = [];
+    number_buttons = [];
+    selected_cell_index = null;
 
     constructor(){
 
@@ -10,17 +12,54 @@ class ScreenBoard{
         for (let index = 0; index < 81; index++) {
             let cell = name_cell+(index+1);
             this.#screen_board[index] = document.getElementById(cell);
-            
-            this.#screen_board[index].addEventListener('change', element=>{
-               console.log("change", index, "value:", this.#screen_board[index].value);
-               this.changed_index[index] = this.#screen_board[index].value;
+
+            this.#screen_board[index].addEventListener('click', element=>{
+            //    console.log("change", index, "value:", this.#screen_board[index].value);
+               console.log("click", index);
+               if (this.selected_cell_index) {
+                    this.#screen_board[this.selected_cell_index].classList.remove('selected');
+               }
+               this.#screen_board[index].classList.add('selected');
+               this.selected_cell_index = index;
             });
             
         }
+
+        this.init_number_buttons();
+    }
+
+    init_number_buttons() {
+        this.number_buttons[0] = document.getElementById("btn-0"); // delete cell
+        this.number_buttons[1] = document.getElementById("btn-1");
+        this.number_buttons[2] = document.getElementById("btn-2");
+        this.number_buttons[3] = document.getElementById("btn-3");
+        this.number_buttons[4] = document.getElementById("btn-4");
+        this.number_buttons[5] = document.getElementById("btn-5");
+        this.number_buttons[6] = document.getElementById("btn-6");
+        this.number_buttons[7] = document.getElementById("btn-7");
+        this.number_buttons[8] = document.getElementById("btn-8");
+        this.number_buttons[9] = document.getElementById("btn-9");
+
+        for (let index = 0; index < this.number_buttons.length; index++) {
+            const button = this.number_buttons[index];
+            
+            button.addEventListener('click', ()=>{
+                console.log(`click ${index} button`);
+                //TODO: add the functionality.
+                // TODO: cant delete readonly number!
+                if (index === 0) {
+                    this.#screen_board[this.selected_cell_index].innerText = "";
+                } else {
+                    this.#screen_board[this.selected_cell_index].innerText = index; 
+                    this.changed_index[this.selected_cell_index] = index;
+                }
+            });  
+        }
+
     }
 
     writeTo(index, txt){
-        this.#screen_board[index].value = txt; 
+        this.#screen_board[index].innerText = txt; 
     }
     
     #readOnly() {
@@ -381,7 +420,7 @@ function runFunction(){
     if(seconds_passed < 10) seconds_passed = '0'+ seconds_passed;
     if(minutes_passed < 10) minutes_passed = '0'+ minutes_passed;
     if(hours_passed < 10) hours_passed = '0' + hours_passed;
-    console.log(seconds_passed)
+    // console.log(seconds_passed)
 
     if(hours_passed != 0){
         time.innerText = `TIME:  ${hours_passed}:${minutes_passed}:${seconds_passed}`;
