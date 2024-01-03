@@ -1,3 +1,10 @@
+// class Events {
+    
+//     static print(){
+//         console.log('events');
+//     }
+// }
+
 class ScreenBoard{
     
     #screen_board = [];
@@ -26,6 +33,7 @@ class ScreenBoard{
         }
 
         this.init_number_buttons();
+        this.init_key_board();
     }
 
     init_number_buttons() {
@@ -47,19 +55,39 @@ class ScreenBoard{
                 console.log(`click ${index} button`);
                 //TODO: add the functionality.
                 // TODO: cant delete readonly number!
+                if (!this.selected_cell_index) return; //not selcted cell
+                let char;
                 if (index === 0) {
-                    this.#screen_board[this.selected_cell_index].innerText = "";
+                    char = '';
                 } else {
-                    this.#screen_board[this.selected_cell_index].innerText = index; 
-                    this.changed_index[this.selected_cell_index] = index;
+                    char = index;
                 }
+                this.writeTo(this.selected_cell_index, index);
             });  
         }
 
     }
 
+    init_key_board() {
+        document.addEventListener('keydown', (event) => {
+            if (!this.selected_cell_index) return;
+
+            const key = event.key;
+            if (key <= 9 &&  key >= 1) {
+                this.writeTo(this.selected_cell_index, key);
+            }
+            // console.log(key)
+            if (["Backspace", "Delete"].includes(key)) {
+                this.writeTo(this.selected_cell_index, '');
+            }
+
+           
+        });
+    }
+
     writeTo(index, txt){
-        this.#screen_board[index].innerText = txt; 
+        this.#screen_board[index].innerText = txt;
+        this.changed_index[this.selected_cell_index] = txt;
     }
     
     #readOnly() {
