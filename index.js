@@ -22,7 +22,7 @@ class ScreenBoard{
 
             this.#screen_board[index].addEventListener('click', element=>{
             //    console.log("change", index, "value:", this.#screen_board[index].value);
-               console.log("click", index);
+            //    console.log("click", index);
                if (this.selected_cell_index) {
                     this.#screen_board[this.selected_cell_index].classList.remove('selected');
                }
