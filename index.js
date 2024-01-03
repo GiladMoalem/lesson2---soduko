@@ -62,7 +62,7 @@ class ScreenBoard{
                 } else {
                     char = index;
                 }
-                this.writeTo(this.selected_cell_index, index);
+                this.writeTo(this.selected_cell_index, char);
             });  
         }
 
