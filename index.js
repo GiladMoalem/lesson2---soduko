@@ -125,6 +125,7 @@ class ScreenBoard{
 
 //-----------------------------SOLVER CLASS--------------------------------------//
 class Solver{
+    static board_size = 81;
     #start_time = Date.now();
 
     constructor(){
@@ -235,29 +236,101 @@ class Solver{
             arr[index] = number;
             seed--;
         }
+        console.log('initRndomArry', arr)
         return arr;
     }
 
-    initRandomBoard(count = 25, seed = 15){
+    // TODO: use it with square but not line.
+    getNextPermutation(arr) {
+        let index = arr.length -1;
+        const min_value = 0;
+        const max_value = Solver.board_size -1;
+        
+        // find the index
+        while (arr[index] >= max_value || max_value - arr[index] < arr.length - index) {
+            index--;
+        }
+        if (index < 0) return null;
+        
+        arr[index]++;
+        for (let j = 1; j + index< arr.length; j++) {
+            arr[index+j] = arr[index+j-1]+1;
+        }
+
+        return arr;
+    }
+    
+    createUnsolvedUniqueBoard(solved_board, num_of_filled_cells=25) {
+        // create unsolved board with <count> full cells and unique solution. 
+        let prtision_arr = [];
+        let is_unique = false;
+
+
+        let chosen_indexs = [];
+        for (let index = 0; index < num_of_filled_cells; index++) {
+            chosen_indexs[index] = index;
+        } 
+        while (!is_unique && chosen_indexs != null) {
+            this.creatEmptyMatrix(prtision_arr);
+
+            // copy the value of the chosen indexs
+            chosen_indexs.forEach(chosen_index =>{
+                prtision_arr[chosen_index] = solved_board[chosen_index];
+            });
+
+            // check if the board is unique
+            const all_the_board_from_partion_arr = this.solverRecursiveDev(0, prtision_arr);
+            if (all_the_board_from_partion_arr.length === 1) {
+                console.log('find 1 unique board');
+                console.log(chosen_indexs);
+                is_unique = true;
+            } else {
+                console.log(`not unique board, find ${all_the_board_from_partion_arr.length} solutions, \nfor ${chosen_indexs} indexs`);
+                this.getNextPermutation(chosen_indexs);
+            }
+        }
+        return prtision_arr;
+    }
+
+    initRandomBoard(count = 25, seed = 25){
         let arr = this.initRandomArray(seed);
         
+        // create full solved board.
         let arr_solved = this.isSolvable(arr);
         while(!arr_solved){
             arr = this.initRandomArray(seed);
             arr_solved = this.isSolvable(arr);
         }
-
+        console.log('initRandomBoard find solvable board');
+        
+        // create unsolved board with <count> full cells and unique solution. 
         let prtision_arr = [];
-        this.creatEmptyMatrix(prtision_arr);
-        while(count > 0){
-            let index;
-            do{ 
-                index = Math.floor (Math.random() * (9*9-1));
-            }while(prtision_arr[index] != 0);
-                
-            prtision_arr[index] = arr_solved[index];
-            count--;
+        let is_unique = false;
+        while (!is_unique) {
+            let cell_count = count;
+            this.creatEmptyMatrix(prtision_arr);
+            while(cell_count > 0){
+                let index;
+                do{ 
+                    index = Math.floor (Math.random() * (9*9-1));
+                }while(prtision_arr[index] != 0);
+                    
+                prtision_arr[index] = arr_solved[index];
+                cell_count--;
+            }
+
+            // check if the board is unique
+            const all_the_board_from_partion_arr = this.solverRecursiveDev(0, prtision_arr);
+            if (all_the_board_from_partion_arr.length === 1) {
+                console.log('find 1 unique board');
+                is_unique = true;
+            } else {
+                console.log(`not unique board, find ${all_the_board_from_partion_arr.length} solutions`);
+            }
         }
+
+        // create unique unsolved board.
+        // const prtision_arr = this.createUnsolvedUniqueBoard(arr_solved, count);
 
         this.logic_board = prtision_arr;
 
@@ -329,6 +402,34 @@ class Solver{
         this.screen_board.reloadScreen(this.logic_board);
         return true;
     }
+
+    solverRecursiveDev(index, curr_arr) {
+        // the end
+        if (index === 81) {
+            // console.log('solverRecursiveDev find', curr_arr);
+            return [[...curr_arr]];
+        }
+        
+        // the cell is full
+        if (curr_arr[index] != 0) {
+            return this.solverRecursiveDev(index+1, curr_arr);
+        }
+
+        let all_posiable_arrays = [];
+        for (let number = 1; number <= 9; number++) {
+            if (this.isLeagle(index, number, curr_arr)){
+                curr_arr[index] = number;
+                let child_solutions = this.solverRecursiveDev(index+1, curr_arr);
+                // if (child_solutions.length !== 0) {
+                    all_posiable_arrays = all_posiable_arrays.concat(child_solutions);
+                // }
+                if (all_posiable_arrays.length > 1) return all_posiable_arrays;
+            }
+        }
+
+        curr_arr[index] = 0;
+        return all_posiable_arrays;
+    }
     
     solverRecursive(index, arr){
         if(index == 81)
@@ -354,7 +455,7 @@ class Solver{
     }
 
     creatEmptyMatrix(arr){
-        for (let index = 0; index < 81; index++) {
+        for (let index = 0; index < Solver.board_size; index++) {
             arr[index] = 0;
         }
     }
@@ -385,13 +486,21 @@ class Solver{
 
 
 
-
-
+const inited_board = [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 3, 8, 0, 7, 0, 8, 0, 0, 0, 0, 4, 0, 0, 0, 7, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 1, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 6, 0]
 
 
 
 const solver = new Solver();
-solver.initRandomBoard(25);//alot prints here
+const dev_start = Date.now();
+// console.log(solver.isSolvable(inited_board));
+// console.log('isSolvable take', (Date.now() - dev_start)/1000, 'seconds to solve the board\n', inited_board);
+const num_of_filled_cells = 30;
+solver.initRandomBoard(num_of_filled_cells);//alot prints here
+console.log(`initRandomBoard(${num_of_filled_cells}) take`, (Date.now() - dev_start)/1000, 'seconds to solve the board\n');
+// const dev_arr = solver.initRandomArray(20);
+// console.log(solver.isSolvable(dev_arr));
+// console.log(dev_arr);
+// console.log(solver.solverRecursiveDev(0, dev_arr));
 
 
 
@@ -409,7 +518,7 @@ clean_board_button.addEventListener('click',e=>{
 const reloade_board_button = document.getElementById("btn-reloade");
 reloade_board_button.addEventListener('click', e=>{
     solver.clean()
-    solver.initRandomBoard(40);
+    solver.initRandomBoard(30);
 });
 
 //SOLVE button
