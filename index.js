@@ -22,8 +22,8 @@ class ScreenBoard{
 
             this.#screen_board[index].addEventListener('click', element=>{
             //    console.log("change", index, "value:", this.#screen_board[index].value);
-            //    console.log("click", index);
-               if (this.selected_cell_index) {
+               console.log("click", index);
+               if (this.selected_cell_index !== null) {
                     this.#screen_board[this.selected_cell_index].classList.remove('selected');
                }
                this.#screen_board[index].classList.add('selected');
@@ -55,7 +55,7 @@ class ScreenBoard{
                 console.log(`click ${index} button`);
                 //TODO: add the functionality.
                 // TODO: cant delete readonly number!
-                if (!this.selected_cell_index) return; //not selcted cell
+                if (this.selected_cell_index === null) return; //not selcted cell
                 let char;
                 if (index === 0) {
                     char = '';
@@ -70,7 +70,7 @@ class ScreenBoard{
 
     init_key_board() {
         document.addEventListener('keydown', (event) => {
-            if (!this.selected_cell_index) return;
+            if (this.selected_cell_index === null) return;
 
             const key = event.key;
             if (key <= 9 &&  key >= 1) {
@@ -80,8 +80,6 @@ class ScreenBoard{
             if (["Backspace", "Delete"].includes(key)) {
                 this.writeTo(this.selected_cell_index, '');
             }
-
-           
         });
     }
 
@@ -259,6 +257,21 @@ class Solver{
 
         return arr;
     }
+
+    getIndexes(num_of_indexes) {
+        let arr = [];
+
+        while(num_of_indexes > 0){
+            let index;
+            do { 
+                index = Math.floor (Math.random() * Solver.board_size);
+            } while(arr.includes(index));
+                
+            arr.push(index);
+            num_of_indexes--;
+        }
+        return arr;
+    }
     
     createUnsolvedUniqueBoard(solved_board, num_of_filled_cells=25) {
         // create unsolved board with <count> full cells and unique solution. 
@@ -267,9 +280,10 @@ class Solver{
 
 
         let chosen_indexs = [];
-        for (let index = 0; index < num_of_filled_cells; index++) {
-            chosen_indexs[index] = index;
-        } 
+        // for (let index = 0; index < num_of_filled_cells; index++) {
+        //     chosen_indexs[index] = index;
+        // } 
+
         while (!is_unique && chosen_indexs != null) {
             this.creatEmptyMatrix(prtision_arr);
 
@@ -286,7 +300,8 @@ class Solver{
                 is_unique = true;
             } else {
                 console.log(`not unique board, find ${all_the_board_from_partion_arr.length} solutions, \nfor ${chosen_indexs} indexs`);
-                this.getNextPermutation(chosen_indexs);
+                // this.getNextPermutation(chosen_indexs);
+                chosen_indexs = this.getIndexes(num_of_filled_cells);
             }
         }
         return prtision_arr;
@@ -304,33 +319,33 @@ class Solver{
         console.log('initRandomBoard find solvable board');
         
         // create unsolved board with <count> full cells and unique solution. 
-        let prtision_arr = [];
-        let is_unique = false;
-        while (!is_unique) {
-            let cell_count = count;
-            this.creatEmptyMatrix(prtision_arr);
-            while(cell_count > 0){
-                let index;
-                do{ 
-                    index = Math.floor (Math.random() * (9*9-1));
-                }while(prtision_arr[index] != 0);
+        // let prtision_arr = [];
+        // let is_unique = false;
+        // while (!is_unique) {
+        //     let cell_count = count;
+        //     this.creatEmptyMatrix(prtision_arr);
+        //     while(cell_count > 0){
+        //         let index;
+        //         do{ 
+        //             index = Math.floor (Math.random() * (9*9-1));
+        //         }while(prtision_arr[index] != 0);
                     
-                prtision_arr[index] = arr_solved[index];
-                cell_count--;
-            }
+        //         prtision_arr[index] = arr_solved[index];
+        //         cell_count--;
+        //     }
 
-            // check if the board is unique
-            const all_the_board_from_partion_arr = this.solverRecursiveDev(0, prtision_arr);
-            if (all_the_board_from_partion_arr.length === 1) {
-                console.log('find 1 unique board');
-                is_unique = true;
-            } else {
-                console.log(`not unique board, find ${all_the_board_from_partion_arr.length} solutions`);
-            }
-        }
+        //     // check if the board is unique
+        //     const all_the_board_from_partion_arr = this.solverRecursiveDev(0, prtision_arr);
+        //     if (all_the_board_from_partion_arr.length === 1) {
+        //         console.log('find 1 unique board');
+        //         is_unique = true;
+        //     } else {
+        //         console.log(`not unique board, find ${all_the_board_from_partion_arr.length} solutions`);
+        //     }
+        // }
 
         // create unique unsolved board.
-        // const prtision_arr = this.createUnsolvedUniqueBoard(arr_solved, count);
+        const prtision_arr = this.createUnsolvedUniqueBoard(arr_solved, count);
 
         this.logic_board = prtision_arr;
 
