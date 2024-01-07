@@ -264,12 +264,20 @@ class Solver{
         while(num_of_indexes > 0){
             let index;
             do { 
-                index = Math.floor (Math.random() * Solver.board_size);
+                index = Math.floor (Math.random() * (Solver.board_size)/2);
             } while(arr.includes(index));
                 
             arr.push(index);
+            // arr.push(solver.board_size -1 - index);
+
+            // num_of_indexes--;
+            num_of_indexes--;
             num_of_indexes--;
         }
+        arr.forEach(index => {
+            arr.push(Solver.board_size -1 - index);
+        });
+
         return arr;
     }
     
@@ -279,7 +287,14 @@ class Solver{
         let is_unique = false;
 
 
-        let chosen_indexs = [];
+        let chosen_indexs = [3,4,12,6,7,15,9,18,19,
+        36,45,46,40,34,35,44,
+        65,73,74,68,76,77,61,62,72];
+        let chosen_indexs2 = [9,10,20,4,13,21,7,16,24,
+        36,37,47,33,43,44,
+        56,64,73,59,67,76,60,70,71,40];
+
+        
         // for (let index = 0; index < num_of_filled_cells; index++) {
         //     chosen_indexs[index] = index;
         // } 
@@ -287,6 +302,11 @@ class Solver{
         while (!is_unique && chosen_indexs != null) {
             this.creatEmptyMatrix(prtision_arr);
 
+            //local check
+            if (chosen_indexs2 && chosen_indexs[0] !== 3) {
+                chosen_indexs = chosen_indexs2;
+                chosen_indexs2 = null;
+            } 
             // copy the value of the chosen indexs
             chosen_indexs.forEach(chosen_index =>{
                 prtision_arr[chosen_index] = solved_board[chosen_index];
@@ -509,7 +529,7 @@ const solver = new Solver();
 const dev_start = Date.now();
 // console.log(solver.isSolvable(inited_board));
 // console.log('isSolvable take', (Date.now() - dev_start)/1000, 'seconds to solve the board\n', inited_board);
-const num_of_filled_cells = 30;
+const num_of_filled_cells = 28;
 solver.initRandomBoard(num_of_filled_cells);//alot prints here
 console.log(`initRandomBoard(${num_of_filled_cells}) take`, (Date.now() - dev_start)/1000, 'seconds to solve the board\n');
 // const dev_arr = solver.initRandomArray(20);
