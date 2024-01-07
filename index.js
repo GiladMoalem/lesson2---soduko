@@ -553,7 +553,7 @@ clean_board_button.addEventListener('click',e=>{
 const reloade_board_button = document.getElementById("btn-reloade");
 reloade_board_button.addEventListener('click', e=>{
     solver.clean()
-    solver.initRandomBoard(30);
+    solver.initRandomBoard(num_of_filled_cells);
 });
 
 //SOLVE button
