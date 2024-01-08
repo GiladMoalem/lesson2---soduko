@@ -130,6 +130,19 @@ class ScreenBoard{
       });    
     }
 
+    init_screen_numbers(arr) {
+        for (let index = 0; index < 81; index++) {
+            let number = arr[index];
+            if(number == 0){
+                this.writeTo(index, "");
+                this.#screen_board[index].classList.remove('read_only');
+            }else{
+                this.writeTo(index, number);
+                this.#screen_board[index].classList.add('read_only');
+            }
+        }
+    }
+
     reloadScreen(arr){
         //initial new metrix to screen and makes the number read only.
         for (let index = 0; index < 81; index++) {
@@ -427,7 +440,7 @@ class Solver{
         this.logic_board = prtision_arr;
 
         this.updateOriginalBoard();
-        this.screen_board.reloadScreen(this.logic_board);
+        this.screen_board.init_screen_numbers(this.logic_board);
        
         console.log("is corrected:", this.isCorrected(arr_solved), arr_solved);
         

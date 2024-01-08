@@ -123,3 +123,7 @@ tr.line > td {
     padding-right: 20px;
 
 }
+
+.read_only {
+    font-weight: bold;
+}
