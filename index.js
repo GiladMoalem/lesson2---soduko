@@ -316,7 +316,8 @@ class Solver{
             const all_the_board_from_partion_arr = this.solverRecursiveDev(0, prtision_arr);
             if (all_the_board_from_partion_arr.length === 1) {
                 console.log('find 1 unique board');
-                console.log(chosen_indexs);
+                console.log("chosen_indexs", chosen_indexs.sort(function(a, b){return a - b}));
+                console.log('prtision_arr', prtision_arr);
                 is_unique = true;
             } else {
                 console.log(`not unique board, find ${all_the_board_from_partion_arr.length} solutions, \nfor ${chosen_indexs} indexs`);
@@ -324,6 +325,32 @@ class Solver{
                 chosen_indexs = this.getIndexes(num_of_filled_cells);
             }
         }
+
+        // console.log('prtision_arr:', prtision_arr);
+        chosen_indexs.forEach(chosen_index => {
+            const value = prtision_arr[chosen_index];
+            // console.log(` deleting index:${chosen_index}, value:${value}`);
+            prtision_arr[chosen_index] = 0;
+            // console.log(prtision_arr);
+            if (this.solverRecursiveDev(0, [...prtision_arr]).length === 1){
+                // console.log(prtision_arr);
+                console.log(`OPTIMAZE! deleting index:${chosen_index}, value:${value}`);
+            } else {
+                prtision_arr[chosen_index] = value;
+            }
+            // console.log(prtision_arr);  
+            
+        });
+        
+        // debug message
+        let count =0;
+        prtision_arr.forEach(element => {
+            if (element !== 0) 
+                count ++;
+        });
+        console.log(`this board have ${count} cells`);
+        
+
         return prtision_arr;
     }
 
@@ -529,7 +556,7 @@ const solver = new Solver();
 const dev_start = Date.now();
 // console.log(solver.isSolvable(inited_board));
 // console.log('isSolvable take', (Date.now() - dev_start)/1000, 'seconds to solve the board\n', inited_board);
-const num_of_filled_cells = 28;
+const num_of_filled_cells = 30;
 solver.initRandomBoard(num_of_filled_cells);//alot prints here
 console.log(`initRandomBoard(${num_of_filled_cells}) take`, (Date.now() - dev_start)/1000, 'seconds to solve the board\n');
 // const dev_arr = solver.initRandomArray(20);
