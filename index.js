@@ -4,6 +4,36 @@
 //         console.log('events');
 //     }
 // }
+ class DebugPrint {
+
+    static LEVELS = {
+        "HIGH": 1,
+        "NORMAL": 2,
+        "LOW": 3
+    }
+    static level = DebugPrint.LEVELS.NORMAL;
+    
+    static #print(level, message) {
+        if (level >= this.level) {
+            console.log(message);
+        }
+    }
+    
+    static high(message) {
+        this.#print(this.LEVELS.HIGH, message);
+    }
+
+    static normal(message) {
+        this.#print(this.LEVELS.NORMAL, message);
+    }
+    static low(message) {
+        this.#print(this.LEVELS.LOW, message);
+    }
+ }
+
+//  DebugPrint.high("hello gilad" );
+//  DebugPrint.level = DebugPrint.LEVELS.HIGH;
+//  DebugPrint.high("hello gilad highh" );
 
 class ScreenBoard{
     
