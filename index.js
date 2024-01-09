@@ -127,7 +127,7 @@ class ScreenBoard{
           }else{
               element.readOnly = false;
           }
-      });    
+      });
     }
 
     init_screen_numbers(arr) {
@@ -646,9 +646,8 @@ clean_changes_board_button.addEventListener('click',e=>{
 
 
 const time = document.getElementById("time");
-time.innerText = "ds";
 start = Date.now();
-time.innerText = start;
+time.innerText = "TIME: 00:00";
 
 var t=setInterval(runFunction,1000);
 function runFunction(){
