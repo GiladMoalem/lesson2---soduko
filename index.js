@@ -4,7 +4,8 @@
 //         console.log('events');
 //     }
 // }
- class DebugPrint {
+
+ log = class DebugPrint {
 
     static LEVELS = {
         "HIGH": 1,
@@ -13,27 +14,31 @@
     }
     static level = DebugPrint.LEVELS.NORMAL;
     
-    static #print(level, message) {
+    static #print(level, func_name, message, arr) {
         if (level >= this.level) {
-            console.log(message);
+            if (arr) {
+                console.log(func_name+"():", message, arr);
+            } else {
+                console.log(func_name+"():", message);
+            }
         }
     }
     
-    static high(message) {
-        this.#print(this.LEVELS.HIGH, message);
+    static high(func_name, message, arr) {
+        this.#print(this.LEVELS.HIGH, func_name, message, arr);
     }
 
-    static normal(message) {
-        this.#print(this.LEVELS.NORMAL, message);
+    static normal(func_name, message, arr) {
+        this.#print(this.LEVELS.NORMAL, func_name, message, arr);
     }
-    static low(message) {
-        this.#print(this.LEVELS.LOW, message);
+    
+    static low(func_name, message, arr) {
+        this.#print(this.LEVELS.LOW, func_name, message, arr);
     }
  }
-
 //  DebugPrint.high("hello gilad" );
 //  DebugPrint.level = DebugPrint.LEVELS.HIGH;
-//  DebugPrint.high("hello gilad highh" );
+//  log.low("hello gilad highh", "main");
 
 class ScreenBoard{
     
@@ -43,6 +48,14 @@ class ScreenBoard{
     selected_cell_index = null;
 
     constructor(){
+        this.init_matrix_screen();
+
+        this.init_number_buttons();
+        this.init_key_board();
+    }
+
+    init_matrix_screen() {
+        const fn = this.init_matrix_screen.name;
 
         //initial the matrix screen
         const name_cell = "cell-";
@@ -51,22 +64,21 @@ class ScreenBoard{
             this.#screen_board[index] = document.getElementById(cell);
 
             this.#screen_board[index].addEventListener('click', element=>{
-            //    console.log("change", index, "value:", this.#screen_board[index].value);
-               console.log("click", index);
-               if (this.selected_cell_index !== null) {
-                    this.#screen_board[this.selected_cell_index].classList.remove('selected');
-               }
-               this.#screen_board[index].classList.add('selected');
-               this.selected_cell_index = index;
+                log.normal(fn, `click ${index}`);
+                
+                if (this.selected_cell_index !== null) {
+                        this.#screen_board[this.selected_cell_index].classList.remove('selected');
+                }
+                this.#screen_board[index].classList.add('selected');
+                this.selected_cell_index = index;
             });
             
         }
-
-        this.init_number_buttons();
-        this.init_key_board();
     }
 
     init_number_buttons() {
+        const fn = this.init_number_buttons.name;
+
         this.number_buttons[0] = document.getElementById("btn-0"); // delete cell
         this.number_buttons[1] = document.getElementById("btn-1");
         this.number_buttons[2] = document.getElementById("btn-2");
@@ -82,7 +94,7 @@ class ScreenBoard{
             const button = this.number_buttons[index];
             
             button.addEventListener('click', ()=>{
-                console.log(`click ${index} button`);
+                log.normal(fn, `click ${index} button`);
                 //TODO: add the functionality.
                 // TODO: cant delete readonly number!
                 if (this.selected_cell_index === null) return; //not selcted cell
@@ -99,14 +111,16 @@ class ScreenBoard{
     }
 
     init_key_board() {
+        const fn = this.init_key_board.name;
         document.addEventListener('keydown', (event) => {
             if (this.selected_cell_index === null) return;
 
             const key = event.key;
+            log.high(fn, key);
+
             if (key <= 9 &&  key >= 1) {
                 this.writeTo(this.selected_cell_index, key);
             }
-            // console.log(key)
             if (["Backspace", "Delete"].includes(key)) {
                 this.writeTo(this.selected_cell_index, '');
             }
@@ -118,17 +132,18 @@ class ScreenBoard{
         this.changed_index[this.selected_cell_index] = txt;
     }
     
-    #readOnly() {
-        //makes the place that with number to read only for make sure no one change them.
-        this.#screen_board.forEach(element => {
-          if (element.value != 0){
-          //can change only not original numbers
-              element.readOnly = true;
-          }else{
-              element.readOnly = false;
-          }
-      });
-    }
+    // #readOnly() {
+    //     //makes the place that with number to read only for make sure no one change them.
+    //     this.#screen_board.forEach(element => {
+    //       if (element.value != 0){
+    //       //can change only not original numbers
+    //           element.readOnly = true;
+    //           log.normal(element, 'readonly');
+    //       }else{
+    //           element.readOnly = false;
+    //       }
+    //   });
+    // }
 
     init_screen_numbers(arr) {
         for (let index = 0; index < 81; index++) {
@@ -144,7 +159,7 @@ class ScreenBoard{
     }
 
     reloadScreen(arr){
-        //initial new metrix to screen and makes the number read only.
+        //initial new metrix to screen.
         for (let index = 0; index < 81; index++) {
             let number = arr[index];
             if(number == 0){
@@ -153,9 +168,8 @@ class ScreenBoard{
                 this.writeTo(index, number);
             }
         }
-        
-        this.#readOnly();
     }
+
     cleanChanges(){
         this.changed_index = []; 
     }
@@ -167,23 +181,27 @@ class ScreenBoard{
 //-----------------------------SOLVER CLASS--------------------------------------//
 class Solver{
     static board_size = 81;
-    #start_time = Date.now();
+    #start_time;
 
     constructor(){
         this.logic_board = []; // the board with the user changes. should check if the board correct.
         this.original_board = []; // the starting board without user changes.
 
         this.screen_board = new ScreenBoard();
-        // this.screen_board.changed_index.addEventListener('change', e=>{
-        //     console.log("screen board change", e);
-        // })
 
         //initial the boards to be empty
-        this.creatEmptyMatrix(this.logic_board)
-        this.creatEmptyMatrix(this.original_board)
+        this.creatEmptyMatrix(this.logic_board);
+        this.creatEmptyMatrix(this.original_board);
+
+        this.restartTime();
     }
 
-    
+    restartTime() {
+        const fn = "restartTime";
+
+        this.#start_time = Date.now();
+        log.normal(fn, `restart time ${this.#start_time}`);
+    }
 
     // this function check if the number can be
     // in the logic_board matrix in spesific index. 
@@ -249,6 +267,8 @@ class Solver{
 //------------------------------------------------------//
 
     initRandomArray(seed = 15){
+        const fn = this.initRandomArray.name;
+
         let arr = [];
         this.creatEmptyMatrix(arr);
 
@@ -256,10 +276,12 @@ class Solver{
             let index;
 
             do{
-                index = Math.floor (Math.random() * (9*9-1));
+                index = Math.floor (Math.random() * (9*9));
+                log.high(fn, `random index:${index}`);
             } while(arr[index] != 0);
         
-            let number = Math.floor (Math.random()*9);
+            let number = Math.floor (Math.random()*(9+1));
+            log.high(fn, `random number ${number}`);
             
             let trys_counter = 0;
             let is_success = true;
@@ -277,7 +299,7 @@ class Solver{
             arr[index] = number;
             seed--;
         }
-        console.log('initRndomArry', arr)
+        log.normal(fn, "array is founded", arr);
         return arr;
     }
 
@@ -302,6 +324,7 @@ class Solver{
     }
 
     getIndexes(num_of_indexes) {
+        const fn = this.getIndexes.name;
         let arr = [];
 
         while(num_of_indexes > 0){
@@ -313,7 +336,6 @@ class Solver{
             arr.push(index);
             // arr.push(solver.board_size -1 - index);
 
-            // num_of_indexes--;
             num_of_indexes--;
             num_of_indexes--;
         }
@@ -321,10 +343,13 @@ class Solver{
             arr.push(Solver.board_size -1 - index);
         });
 
+        log.high(fn, arr);
         return arr;
     }
     
     createUnsolvedUniqueBoard(solved_board, num_of_filled_cells=25) {
+        const fn = this.createUnsolvedUniqueBoard.name;
+
         // create unsolved board with <count> full cells and unique solution. 
         let prtision_arr = [];
         let is_unique = false;
@@ -358,55 +383,55 @@ class Solver{
             // check if the board is unique
             const all_the_board_from_partion_arr = this.solverRecursiveDev(0, prtision_arr);
             if (all_the_board_from_partion_arr.length === 1) {
-                console.log('find 1 unique board');
-                console.log("chosen_indexs", chosen_indexs.sort(function(a, b){return a - b}));
-                console.log('prtision_arr', prtision_arr);
+                log.normal(fn, 'find 1 unique board');
+                log.high(fn, "chosen_indexs", chosen_indexs.sort(function(a, b){return a - b}));
+                log.high(fn, 'prtision_arr', prtision_arr);
                 is_unique = true;
             } else {
-                console.log(`not unique board, find ${all_the_board_from_partion_arr.length} solutions, \nfor ${chosen_indexs} indexs`);
+                log.high(fn, `not unique board, find ${all_the_board_from_partion_arr.length} solutions for indexs: `, chosen_indexs);
                 // this.getNextPermutation(chosen_indexs);
                 chosen_indexs = this.getIndexes(num_of_filled_cells);
             }
         }
 
-        // console.log('prtision_arr:', prtision_arr);
+        // ---- try to minimaz the amount of chosen indexs ---- //
+        let deleted_counter = 0;
         chosen_indexs.forEach(chosen_index => {
             const value = prtision_arr[chosen_index];
-            // console.log(` deleting index:${chosen_index}, value:${value}`);
             prtision_arr[chosen_index] = 0;
-            // console.log(prtision_arr);
             if (this.solverRecursiveDev(0, [...prtision_arr]).length === 1){
-                // console.log(prtision_arr);
-                console.log(`OPTIMAZE! deleting index:${chosen_index}, value:${value}`);
+                deleted_counter++;
+                log.high(fn, `OPTIMAZE! deleting index:${chosen_index}, value:${value}`);
             } else {
                 prtision_arr[chosen_index] = value;
             }
-            // console.log(prtision_arr);  
-            
         });
-        
+        log.normal(fn, `deleted ${deleted_counter} cells from ${chosen_indexs.length} cells`);
+
         // debug message
         let count =0;
         prtision_arr.forEach(element => {
             if (element !== 0) 
                 count ++;
         });
-        console.log(`this board have ${count} cells`);
-        
+        log.normal(fn, `this board have ${count} cells`);
 
         return prtision_arr;
     }
 
-    initRandomBoard(count = 25, seed = 25){
-        let arr = this.initRandomArray(seed);
-        
+    initRandomBoard(count = 25, seed = 15){
+        const fn = "initRandomBoard";
+
         // create full solved board.
-        let arr_solved = this.isSolvable(arr);
-        while(!arr_solved){
-            arr = this.initRandomArray(seed);
+        let arr_solved;
+        let full_solve_counter = 0;
+        do {
+            let arr = this.initRandomArray(seed);
             arr_solved = this.isSolvable(arr);
+            full_solve_counter++;
         }
-        console.log('initRandomBoard find solvable board');
+        while(!arr_solved);
+        log.normal(fn, `solvable board founded after ${full_solve_counter} times`);
         
         // create unsolved board with <count> full cells and unique solution. 
         // let prtision_arr = [];
@@ -442,7 +467,7 @@ class Solver{
         this.updateOriginalBoard();
         this.screen_board.init_screen_numbers(this.logic_board);
        
-        console.log("is corrected:", this.isCorrected(arr_solved), arr_solved);
+        log.high(fn, `is corrected: ${this.isCorrected(arr_solved)}`, arr_solved);
         
     }
 
@@ -493,9 +518,13 @@ class Solver{
     }
 
     solveAndUpdateScreen(){
+        const fn = "solveAndUpdateScreen";
+
         this.updateLogicMetrixFromScreen();
-        if(!this.isCorrected()) return "is not corrected";
-        
+        if(!this.isCorrected()) {
+            log.low(fn, 'the screen board is not corrected', this.logic_board)
+            return "is not corrected";
+        }
         let temp_matrix = [...this.logic_board];
 
         if(!this.solverRecursive(0, this.logic_board)){
@@ -565,19 +594,23 @@ class Solver{
         }
     }
     
-    updateLogicMetrixFromScreen(){        
+    updateLogicMetrixFromScreen(){
+        const fn = "updateLogicMetrixFromScreen";
+
         this.screen_board.changed_index.forEach ((element, index) => {
             this.logic_board[index] = element;
         });
         this.screen_board.cleanChanges();
 
-        console.log(this.logic_board)
-        // console.log(this.original_board)
+        log.high(fn, "the logic board:", this.logic_board);
+        log.high(fn, "the original board:", this.original_board);
     }
 
     cleanChanges(){
-        console.log("original:", this.original_board);
-        console.log("logical:", this.logic_board);
+        const fn = "cleanChanges";
+
+        log.normal(fn, "original board:", this.original_board);;
+        log.normal(fn, "logical board:", this.logic_board);
 
         this.logic_board = [...this.original_board];
         this.screen_board.reloadScreen(this.logic_board);
@@ -616,27 +649,38 @@ window.addEventListener('load',()=>{
 //CLEAN button
 const clean_board_button = document.getElementById("btn-clean");
 clean_board_button.addEventListener('click',e=>{
+    const fn = "clean_board_button.addEventListener";
+
+    log.normal(fn, "click clean button");
     solver.clean();
 });
 
 //RELOAD button
 const reloade_board_button = document.getElementById("btn-reloade");
 reloade_board_button.addEventListener('click', e=>{
+    const fn = "reloade_board_button.addEventListener";
+
+    log.normal(fn, "click reload button");
     solver.clean()
     solver.initRandomBoard(num_of_filled_cells);
+    solver.restartTime();
 });
 
 //SOLVE button
 const solve_board_button = document.getElementById("btn-solve");
 solve_board_button.addEventListener('click',e=>{
-    console.log("the board solved ",solver.solveAndUpdateScreen());
+    const fn = "solve_board_button.addEventListener";
+    log.normal(fn, "click solve button");
+    log.normal(fn, `the board solved ${solver.solveAndUpdateScreen()}`);
 });
 
 //CLEAN CHANGES
 const clean_changes_board_button = document.getElementById("btn-clean-changes");
-clean_changes_board_button.addEventListener('click',e=>{    
+clean_changes_board_button.addEventListener('click',e=>{
+    const fn = "clean_changes_board_button.addEventListener";
+
+    log.normal(fn, "click clean changes button");
     solver.cleanChanges();
-    console.log("clean changes");
 })
 
 
@@ -668,7 +712,7 @@ function runFunction(){
     }
     else{
         time.innerText = `TIME:  ${minutes_passed}:${seconds_passed}`;
-    }    
+    }
     
 }
     // clearInterval(t);
