@@ -13,6 +13,7 @@
         "LOW": 3
     }
     static level = DebugPrint.LEVELS.NORMAL;
+    static time_flag = true;
     
     static #print(level, func_name, message, arr) {
         if (level >= this.level) {
@@ -35,7 +36,22 @@
     static low(func_name, message, arr) {
         this.#print(this.LEVELS.LOW, func_name, message, arr);
     }
+
+    static runAndPrintTime(func, ...args) {
+        const start_time = Date.now();
+        console.log(`TIME: start ${func.name} (`, args, ')');
+        const res = func(...args);
+        const end_time = Date.now();
+
+        const run_time = (end_time - start_time) / 1000
+        if (this.time_flag) {
+            console.log(`TIME: ${func.name} (`, args, `) take ${run_time} secounds`);   
+        }
+        return res;
+    }
  }
+
+//  log.runAndPrintTime(console.log, "hello", "i", "love");
 //  DebugPrint.high("hello gilad" );
 //  DebugPrint.level = DebugPrint.LEVELS.HIGH;
 //  log.low("hello gilad highh", "main");
@@ -420,19 +436,21 @@ class Solver{
     }
 
     initRandomBoard(count = 25, seed = 15){
-        const fn = "initRandomBoard";
+        const fn = this.initRandomBoard.name;
 
+        //TODO: change the timer to log.time
+        const startTime = Date.now();
         // create full solved board.
         let arr_solved;
         let full_solve_counter = 0;
         do {
-            let arr = this.initRandomArray(seed);
-            arr_solved = this.isSolvable(arr);
+            let arr = log.runAndPrintTime(this.initRandomArray.bind(this), seed);
+            arr_solved = log.runAndPrintTime(this.isSolvable.bind(this), arr);
             full_solve_counter++;
         }
         while(!arr_solved);
-        log.normal(fn, `solvable board founded after ${full_solve_counter} times`);
-        
+        log.normal(fn, `solvable board founded after ${full_solve_counter} times, takes ${(Date.now()-startTime) / 1000} sec`);
+        log.low(fn, 'solveable board:', arr_solved)
         // create unsolved board with <count> full cells and unique solution. 
         // let prtision_arr = [];
         // let is_unique = false;
@@ -460,7 +478,7 @@ class Solver{
         // }
 
         // create unique unsolved board.
-        const prtision_arr = this.createUnsolvedUniqueBoard(arr_solved, count);
+        const prtision_arr = log.runAndPrintTime(this.createUnsolvedUniqueBoard.bind(this), arr_solved, count);
 
         this.logic_board = prtision_arr;
 
@@ -508,10 +526,15 @@ class Solver{
     
 
     isSolvable(arr){
-        if(!this.isCorrected(arr)) return "is not corrected";
+        const fn = this.isSolvable.name;
+
+        if(!this.isCorrected(arr)) {
+            log.low(fn, 'is not corrected array:', arr);
+            return "is not corrected";  
+        } 
         let temp_matrix = [...arr];
         
-        if(!this.solverRecursive(0, temp_matrix)){
+        if(!log.runAndPrintTime(this.solverRecursive.bind(this), 0, temp_matrix)){
             return false;
         }
         return temp_matrix;
@@ -566,16 +589,15 @@ class Solver{
     }
     
     solverRecursive(index, arr){
+        // console.log("solve recursive", arr, "index:",index);
         if(index == 81)
             return true;
 
         // let [i,j] = this.#indexToCordinats(index);
-        // console.log("solve recursive",arr[index], "index:",index);
 
         if(arr[index] != 0){
             return this.solverRecursive(index+1, arr);
         }
-        
         for (let k = 1; k < 10; k++) {
             if(this.isLeagle(index,k,arr)){
                 // console.log("solve recurs legal - index:",index," value:",k);
@@ -621,25 +643,9 @@ class Solver{
 }
 
 
-
-
-
-const inited_board = [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 3, 8, 0, 7, 0, 8, 0, 0, 0, 0, 4, 0, 0, 0, 7, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 1, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 6, 0]
-
-
-
 const solver = new Solver();
-const dev_start = Date.now();
-// console.log(solver.isSolvable(inited_board));
-// console.log('isSolvable take', (Date.now() - dev_start)/1000, 'seconds to solve the board\n', inited_board);
 const num_of_filled_cells = 30;
-solver.initRandomBoard(num_of_filled_cells);//alot prints here
-console.log(`initRandomBoard(${num_of_filled_cells}) take`, (Date.now() - dev_start)/1000, 'seconds to solve the board\n');
-// const dev_arr = solver.initRandomArray(20);
-// console.log(solver.isSolvable(dev_arr));
-// console.log(dev_arr);
-// console.log(solver.solverRecursiveDev(0, dev_arr));
-
+log.runAndPrintTime(solver.initRandomBoard.bind(solver), num_of_filled_cells);
 
 
 window.addEventListener('load',()=>{
