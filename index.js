@@ -51,10 +51,42 @@
     }
  }
 
-//  log.runAndPrintTime(console.log, "hello", "i", "love");
-//  DebugPrint.high("hello gilad" );
-//  DebugPrint.level = DebugPrint.LEVELS.HIGH;
-//  log.low("hello gilad highh", "main");
+
+class Board {
+    static size = 81;
+
+    static creatEmptyMatrix(arr){
+        for (let index = 0; index < Board.size; index++) {
+            arr[index] = 0;
+        }
+    }
+
+    //cordinats casting functions
+    static cordinatsToIndex(x,y){ return x*9+y; }
+    static indexToCordinats(index){
+        let x = Math.floor(index / 9);
+        let y = index % 9;
+        return [x ,y];
+    }
+
+    static getSquaresIndexes() {
+        const fn = this.getSquaresIndexes.name;
+        
+        var squares = [[], [], [], [], [], [], [], [], [],];
+        for (let index = 0; index < Board.size; index++) {
+            const [x,y] = Board.indexToCordinats(index);
+            log.high(fn, `x: ${x}, y:${y}`);
+
+            var col = Math.floor(y/3);
+            var row = Math.floor(x/3);
+            
+            const square_number = 3*row + col;
+            squares[square_number].push(index);
+        }
+        log.normal(fn, squares);
+        return squares;
+    }
+}
 
 class ScreenBoard{
     
@@ -75,7 +107,7 @@ class ScreenBoard{
 
         //initial the matrix screen
         const name_cell = "cell-";
-        for (let index = 0; index < 81; index++) {
+        for (let index = 0; index < Board.size; index++) {
             let cell = name_cell+(index+1);
             this.#screen_board[index] = document.getElementById(cell);
 
@@ -147,22 +179,9 @@ class ScreenBoard{
         this.#screen_board[index].innerText = txt;
         this.changed_index[this.selected_cell_index] = txt;
     }
-    
-    // #readOnly() {
-    //     //makes the place that with number to read only for make sure no one change them.
-    //     this.#screen_board.forEach(element => {
-    //       if (element.value != 0){
-    //       //can change only not original numbers
-    //           element.readOnly = true;
-    //           log.normal(element, 'readonly');
-    //       }else{
-    //           element.readOnly = false;
-    //       }
-    //   });
-    // }
 
     init_screen_numbers(arr) {
-        for (let index = 0; index < 81; index++) {
+        for (let index = 0; index < Board.size; index++) {
             let number = arr[index];
             if(number == 0){
                 this.writeTo(index, "");
@@ -176,7 +195,7 @@ class ScreenBoard{
 
     reloadScreen(arr){
         //initial new metrix to screen.
-        for (let index = 0; index < 81; index++) {
+        for (let index = 0; index < Board.size; index++) {
             let number = arr[index];
             if(number == 0){
                 this.writeTo(index, "");
@@ -196,7 +215,6 @@ class ScreenBoard{
 
 //-----------------------------SOLVER CLASS--------------------------------------//
 class Solver{
-    static board_size = 81;
     #start_time;
 
     constructor(){
@@ -206,8 +224,8 @@ class Solver{
         this.screen_board = new ScreenBoard();
 
         //initial the boards to be empty
-        this.creatEmptyMatrix(this.logic_board);
-        this.creatEmptyMatrix(this.original_board);
+        Board.creatEmptyMatrix(this.logic_board);
+        Board.creatEmptyMatrix(this.original_board);
 
         this.restartTime();
     }
@@ -222,12 +240,12 @@ class Solver{
     // this function check if the number can be
     // in the logic_board matrix in spesific index. 
     isLeagle(index, num, arr = this.logic_board){
-        let [i,j] = this.#indexToCordinats(index);
+        let [i,j] = Board.indexToCordinats(index);
 
         if(num > 9 || num <1)  return false;
         for (let k = 0; k < 9; k++) {
-            if(k != i && arr[this.#cordinatsToIndex(k,j)] == num) return false;
-            if(k != j && arr[this.#cordinatsToIndex(i,k)] == num) return false;
+            if(k != i && arr[Board.cordinatsToIndex(k,j)] == num) return false;
+            if(k != j && arr[Board.cordinatsToIndex(i,k)] == num) return false;
             // console.log("i j =", i, j, "index =", index, "true")
         }
         let i2 = (Math.floor(i/3))*3;
@@ -235,7 +253,7 @@ class Solver{
 
         for (let k = 0; k < 3; k++) {
             for (let l = 0; l < 3; l++) {
-                if( (i2+k != i || j2+l != j) && arr[this.#cordinatsToIndex(i2+k, j2+l)] == num) return false;
+                if( (i2+k != i || j2+l != j) && arr[Board.cordinatsToIndex(i2+k, j2+l)] == num) return false;
             }
         }
         return true;
@@ -286,7 +304,7 @@ class Solver{
         const fn = this.initRandomArray.name;
 
         let arr = [];
-        this.creatEmptyMatrix(arr);
+        Board.creatEmptyMatrix(arr);
 
         while(seed > 0){
             let index;
@@ -323,7 +341,7 @@ class Solver{
     getNextPermutation(arr) {
         let index = arr.length -1;
         const min_value = 0;
-        const max_value = Solver.board_size -1;
+        const max_value = Board.size -1;
         
         // find the index
         while (arr[index] >= max_value || max_value - arr[index] < arr.length - index) {
@@ -346,17 +364,17 @@ class Solver{
         while(num_of_indexes > 0){
             let index;
             do { 
-                index = Math.floor (Math.random() * (Solver.board_size)/2);
+                index = Math.floor (Math.random() * (Board.size)/2);
             } while(arr.includes(index));
                 
             arr.push(index);
-            // arr.push(solver.board_size -1 - index);
+            // arr.push(Board.size -1 - index);
 
             num_of_indexes--;
             num_of_indexes--;
         }
         arr.forEach(index => {
-            arr.push(Solver.board_size -1 - index);
+            arr.push(Board.size -1 - index);
         });
 
         log.high(fn, arr);
@@ -384,7 +402,7 @@ class Solver{
         // } 
 
         while (!is_unique && chosen_indexs != null) {
-            this.creatEmptyMatrix(prtision_arr);
+            Board.creatEmptyMatrix(prtision_arr);
 
             //local check
             if (chosen_indexs2 && chosen_indexs[0] !== 3) {
@@ -450,32 +468,7 @@ class Solver{
         }
         while(!arr_solved);
         log.normal(fn, `solvable board founded after ${full_solve_counter} times, takes ${(Date.now()-startTime) / 1000} sec`);
-        log.low(fn, 'solveable board:', arr_solved)
-        // create unsolved board with <count> full cells and unique solution. 
-        // let prtision_arr = [];
-        // let is_unique = false;
-        // while (!is_unique) {
-        //     let cell_count = count;
-        //     this.creatEmptyMatrix(prtision_arr);
-        //     while(cell_count > 0){
-        //         let index;
-        //         do{ 
-        //             index = Math.floor (Math.random() * (9*9-1));
-        //         }while(prtision_arr[index] != 0);
-                    
-        //         prtision_arr[index] = arr_solved[index];
-        //         cell_count--;
-        //     }
-
-        //     // check if the board is unique
-        //     const all_the_board_from_partion_arr = this.solverRecursiveDev(0, prtision_arr);
-        //     if (all_the_board_from_partion_arr.length === 1) {
-        //         console.log('find 1 unique board');
-        //         is_unique = true;
-        //     } else {
-        //         console.log(`not unique board, find ${all_the_board_from_partion_arr.length} solutions`);
-        //     }
-        // }
+        log.low(fn, 'solveable board:', arr_solved);
 
         // create unique unsolved board.
         const prtision_arr = log.runAndPrintTime(this.createUnsolvedUniqueBoard.bind(this), arr_solved, count);
@@ -490,14 +483,14 @@ class Solver{
     }
 
     updateOriginalBoard(){
-        for (let index = 0; index < 81; index++) {
+        for (let index = 0; index < Board.size; index++) {
             this.original_board[index] =  this.logic_board[index];
         }
     }
     
 
     clean(){
-        for (let index = 0; index < 81; index++) {
+        for (let index = 0; index < Board.size; index++) {
             this.logic_board[index] = 0;
             this.original_board[index] = 0;
         }
@@ -505,17 +498,9 @@ class Solver{
     }
 
 
-    //cordinats casting functions
-    #cordinatsToIndex(x,y){ return x*9+y; }
-    #indexToCordinats(index){
-        let x = Math.floor(index / 9);
-        let y = index % 9;
-        return [x ,y];
-    }
-
     // TODO: can optimize it
     isCorrected(arr = this.logic_board){
-        for (let index = 0; index < 81; index++) {
+        for (let index = 0; index < Board.size; index++) {
             let number = arr[index];
             if( number != 0 && ! this.isLeagle(index, number, arr)){
                 return false;
@@ -562,7 +547,7 @@ class Solver{
 
     solverRecursiveDev(index, curr_arr) {
         // the end
-        if (index === 81) {
+        if (index === Board.size) {
             // console.log('solverRecursiveDev find', curr_arr);
             return [[...curr_arr]];
         }
@@ -590,10 +575,10 @@ class Solver{
     
     solverRecursive(index, arr){
         // console.log("solve recursive", arr, "index:",index);
-        if(index == 81)
+        if(index == Board.size)
             return true;
 
-        // let [i,j] = this.#indexToCordinats(index);
+        // let [i,j] = Board.indexToCordinats(index);
 
         if(arr[index] != 0){
             return this.solverRecursive(index+1, arr);
@@ -608,12 +593,6 @@ class Solver{
         }
         arr[index] = 0;
         return false;
-    }
-
-    creatEmptyMatrix(arr){
-        for (let index = 0; index < Solver.board_size; index++) {
-            arr[index] = 0;
-        }
     }
     
     updateLogicMetrixFromScreen(){
@@ -722,7 +701,3 @@ function runFunction(){
     
 }
     // clearInterval(t);
-
-
-
-
