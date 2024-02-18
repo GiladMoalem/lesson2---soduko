@@ -56,6 +56,7 @@
 //  DebugPrint.level = DebugPrint.LEVELS.HIGH;
 //  log.low("hello gilad highh", "main");
 
+//-----------------------------SCREEN_BOARD CLASS--------------------------------------//
 class ScreenBoard{
     
     #screen_board = [];
